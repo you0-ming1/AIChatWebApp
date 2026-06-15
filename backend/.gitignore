@@ -27,3 +27,6 @@ Thumbs.db
 # 环境变量文件（包含密码、密钥等敏感信息）
 # 后续我们会创建.env文件，但不应该上传到GitHub
 .env
+
+# 小米AI配置文件（包含API密钥等敏感信息）
+config/xiaomi-ai.js

@@ -36,9 +36,10 @@ const mysql = require('mysql2/promise');
  */
 const dbConfig = {
   host: 'localhost',        // 数据库服务器地址
-  port: 3333,               // MySQL默认端口
+  // port: 3333,               // MySQL默认端口
+  port: 3306,               // MySQL默认端口
   user: 'root',             // 数据库用户名
-  password: '123456',         // 数据库密码（请改成你自己的密码）
+  password: 'root',         // 数据库密码（请改成你自己的密码）
   database: 'ai_chat_db'    // 要连接的数据库名
 };
 

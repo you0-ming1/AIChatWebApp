@@ -1,325 +1,94 @@
-/**
- * style.css - 全局样式文件
- * 
- * ============================================
- * 文件作用
- * ============================================
- * 
- * 定义整个应用的全局样式：
- * 1. 设计系统（CSS变量）
- * 2. 基础重置（reset）
- * 3. 字体系统
- * 4. 滚动条美化
- * 5. 选中文本样式
- * 
- * ============================================
- * 设计理念
- * ============================================
- * 
- * Apple风格深色主题：
- * - 蓝灰色系，不是纯黑
- * - 柔和的颜色，不刺眼
- * - 统一的圆角、阴影、动效
- * - 半透明玻璃效果
- * 
- * ============================================
- * CSS变量系统
- * ============================================
- * 
- * 为什么用CSS变量？
- * 1. 方便修改：改一处，全局生效
- * 2. 易于维护：所有设计值集中管理
- * 3. 支持主题切换：可以动态切换深色/浅色
- */
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* ============================================
-   TailwindCSS 指令
-   ============================================ */
-/* 
- * @tailwind：TailwindCSS的指令
- * 
- * base：基础样式（reset、normalize）
- * components：组件类（按钮、卡片等）
- * utilities：工具类（flex、text-center等）
- */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ============================================
-   字体导入
-   ============================================ */
-/* 
- * Google Fonts：Inter字体
- * 
- * Inter：优秀的UI字体
- * - 清晰、现代
- * - 适合屏幕显示
- * - 支持多种字重（300-700）
- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-/* ============================================
-   CSS变量定义
-   ============================================ */
 :root {
-  /* ============================================
-     背景色系统
-     ============================================ */
-  /* 
-   * 主背景色（最深）
-   * 用于页面整体背景
-   * 
-   * #0f1115 是蓝灰色，不是纯黑
-   * 纯黑（#000000）会显得很死板
-   */
-  --bg-primary: #0f1115;
-  
-  /* 
-   * 次要背景色（稍亮）
-   * 用于侧边栏、卡片等
-   */
-  --bg-secondary: #151821;
-  
-  /* 
-   * 第三背景色（更亮）
-   * 用于输入框、代码块等
-   */
-  --bg-tertiary: #1b1f27;
-  
-  /* 
-   * 卡片背景色
-   * 用于消息卡片、设置面板等
-   */
-  --bg-card: #20232d;
+  --bg: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #f1f3f4;
+  --bg-hover: #e8eaed;
+  --bg-active: #d2e3fc;
 
-  /* ============================================
-     半透明玻璃效果
-     ============================================ */
-  /* 
-   * 玻璃背景色
-   * 
-   * rgba(255,255,255,0.04)：
-   * - 255,255,255：白色
-   * - 0.04：4%透明度（几乎透明）
-   * 
-   * 效果：微弱的白色叠加，增加层次感
-   */
-  --glass-bg: rgba(255, 255, 255, 0.04);
-  
-  /* 玻璃悬停背景色（稍亮） */
-  --glass-bg-hover: rgba(255, 255, 255, 0.06);
-  
-  /* 玻璃边框色（8%透明度的白色） */
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --surface: #ffffff;
+  --surface-dim: #f8f9fa;
+  --surface-container: #f1f3f4;
+  --surface-container-high: #e8eaed;
 
-  /* ============================================
-     文字颜色系统
-     ============================================ */
-  /* 
-   * 主文字色（最亮）
-   * 用于标题、正文
-   * 
-   * 90%透明度的白色
-   * 不是纯白（100%），更柔和
-   */
-  --text-primary: rgba(255, 255, 255, 0.9);
-  
-  /* 次要文字色（稍暗） */
-  --text-secondary: rgba(255, 255, 255, 0.6);
-  
-  /* 第三文字色（最暗） */
-  --text-tertiary: rgba(255, 255, 255, 0.4);
+  --on-surface: #1f1f1f;
+  --on-surface-variant: #5f6368;
+  --on-surface-dim: #9aa0a6;
 
-  /* ============================================
-     强调色
-     ============================================ */
-  /* 
-   * 主强调色（蓝色）
-   * 
-   * 用于按钮、链接、选中状态
-   * 柔和的蓝色，不刺眼
-   */
-  --accent: #4a9eff;
-  
-  /* 强调色悬停态（更亮的蓝色） */
-  --accent-hover: #6bb3ff;
+  --primary: #1a73e8;
+  --primary-hover: #1557b0;
+  --primary-container: #d2e3fc;
+  --on-primary: #ffffff;
 
-  /* ============================================
-     圆角系统
-     ============================================ */
-  /* 
-   * 统一的圆角值
-   * 
-   * 小元素：10px（按钮、标签）
-   * 普通卡片：16px（输入框、会话项）
-   * 大容器：24px（登录卡片）
-   * 弹窗：28px（对话框）
-   */
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-xl: 28px;
+  --secondary: #185abc;
+  --outline: #dadce0;
+  --outline-strong: #c4c7cc;
 
-  /* ============================================
-     阴影系统
-     ============================================ */
-  /* 
-   * Apple风格：阴影很轻
-   * 
-   * 不是那种很重的黑色阴影
-   * 而是柔和的、几乎感觉不到的阴影
-   */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.16);
+  --error: #d93025;
+  --error-container: #fce8e6;
 
-  /* ============================================
-     动效系统
-     ============================================ */
-  /* 
-   * 统一的过渡时间
-   * 
-   * fast：150毫秒（按钮悬停等）
-   * normal：200毫秒（一般过渡）
-   * slow：300毫秒（页面切换等）
-   * 
-   * 缓动函数：cubic-bezier(0.4, 0, 0.2, 1)
-   * 这是Google Material Design的缓动曲线
-   * 适合UI动画
-   */
-  --transition-fast: all 0.15s ease;
-  --transition-normal: all 0.2s ease;
-  --transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  --transition-fast: 150ms cubic-bezier(0.2, 0, 0, 1);
+  --transition-normal: 250ms cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* ============================================
-   全局重置（CSS Reset）
-   ============================================ */
-/* 
- * *：选择所有元素
- * 
- * 为什么要重置？
- * 因为不同浏览器有不同的默认样式
- * 比如：
- * - body 有 margin
- * - h1 有 font-size 和 margin
- * - button 有 padding 和 border
- * 
- * 重置后，所有元素从零开始
- * 我们可以完全控制样式
- */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* ============================================
-   基础排版
-   ============================================ */
 html, body {
-  /* 占满整个屏幕 */
   height: 100%;
-  
-  /* 
-   * 字体系统
-   * 
-   * font-family：字体优先级列表
-   * 
-   * 1. Inter：首选UI字体
-   * 2. -apple-system：macOS系统字体
-   * 3. BlinkMacSystemFont：macOS Safari字体
-   * 4. 'Segoe UI'：Windows系统字体
-   * 5. sans-serif：通用无衬线字体
-   * 
-   * 这样写可以跨平台显示最佳字体
-   */
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  
-  /* 深色背景 */
-  background: var(--bg-primary);
-  
-  /* 主文字色 */
-  color: var(--text-primary);
-  
-  /* 
-   * line-height: 1.6
-   * 行高是字体大小的1.6倍
-   * 
-   * 为什么是1.6？
-   * - 太小（1.0）：行与行挤在一起
-   * - 太大（2.0）：行与行太松散
-   * - 1.6：舒适的阅读体验
-   */
-  line-height: 1.6;
-  
-  /* 
-   * 字体平滑
-   * 
-   * -webkit-font-smoothing: antialiased
-   * 使用灰度平滑，字体更清晰
-   * 
-   * -moz-osx-font-smoothing: grayscale
-   * Firefox兼容
-   */
+  font-family: 'Google Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--on-surface);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* 应用根元素 */
 #app {
   height: 100%;
 }
 
-/* ============================================
-   滚动条美化
-   ============================================ */
-/* 
- * 为什么要美化滚动条？
- * 
- * Windows默认滚动条：
- * - 很宽（17px）
- * - 很丑
- * - 破坏高级感
- * 
- * 美化后：
- * - 超细（6px）
- * - 半透明
- * - hover才明显
- */
-
-/* Webkit内核浏览器（Chrome、Safari、Edge） */
 ::-webkit-scrollbar {
-  width: 6px;   /* 宽度 */
-  height: 6px;  /* 水平滚动条高度 */
+  width: 8px;
+  height: 8px;
 }
 
-/* 滚动条轨道（背景） */
 ::-webkit-scrollbar-track {
-  background: transparent;  /* 透明 */
+  background: transparent;
 }
 
-/* 滚动条滑块（可拖动的部分） */
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);  /* 10%透明度的白色 */
-  border-radius: 3px;  /* 圆角 */
+  background: var(--outline-strong);
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
-/* 滑块悬停效果 */
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);  /* 20%透明度 */
+  background: var(--on-surface-dim);
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
-/* ============================================
-   选中文本样式
-   ============================================ */
-/* 
- * ::selection：用户选中文本时的样式
- * 
- * 默认：蓝色背景
- * 自定义：柔和的蓝色背景（30%透明度）
- */
 ::selection {
-  background: rgba(74, 158, 255, 0.3);
+  background: var(--primary-container);
+  color: var(--on-surface);
 }
