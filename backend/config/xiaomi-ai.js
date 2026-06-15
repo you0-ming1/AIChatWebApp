@@ -41,7 +41,7 @@ const xiaomiAIConfig = {
    * 2. 不要打印到控制台
    * 3. 不要返回给前端
    */
-  apiKey: process.env.XIAOMI_API_KEY || 'tp-cepfy2fg1vg7yxpmpdjn741r3d7c3m6o38tzm11if995ck14',
+  apiKey: process.env.XIAOMI_API_KEY ,
 
   /**
    * baseURL：API基础地址
