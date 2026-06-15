@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>AI Chat 全栈项目 - 思维导图</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0f1115; color: #e1e4e8;
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  overflow: hidden; height: 100vh;
+}
+#info {
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 10; font-size: 13px; color: #4a9eff;
+  background: rgba(15,17,21,0.9); padding: 6px 16px;
+  border-radius: 8px; border: 1px solid rgba(74,158,255,0.2);
+  pointer-events: none;
+}
+canvas {
+  display: block;
+  cursor: grab;
+}
+canvas:active { cursor: grabbing; }
+</style>
+</head>
+<body>
+<div id="info">🖱 拖拽平移 · 滚轮缩放 · 点击节点展开/折叠</div>
+<canvas id="canvas"></canvas>
+<script>
+// ============================================================
+// 完全自包含的思维导图渲染器（零外部依赖）
+// ============================================================
+
+// ---------- 思维导图数据 ----------
+const DATA = {
+  label: '🎯 AI Chat 全栈项目',
+  children: [{
+    label: '🚪 项目入口',
+    children: [{
+      label: 'backend/app.js',
+      desc: 'Express服务器入口',
+      children: [
+        { label: '导入依赖', desc: 'express / cors / pool / 三个路由' },
+        { label: 'app.use(express.json())', desc: '解析JSON请求体' },
+        { label: 'app.use(cors())', desc: '处理跨域' },
+        { label: '挂载用户路由', desc: 'app.use("/api/user", userRoutes)' },
+        { label: '挂载聊天路由', desc: 'app.use("/api/chat", chatRoutes)' },
+        { label: '挂载AI路由', desc: 'app.use("/api/ai", aiRoutes)' },
+        { label: 'app.listen(5000)', desc: '启动服务器' },
+      ]
+    }, {
+      label: 'frontend/vite.config.ts',
+      desc: 'Vite构建配置',
+      children: [
+        { label: 'port: 3000', desc: '前端运行在3000端口' },
+        { label: '代理 /api → :5000', desc: '解决跨域, Vite自动转发' },
+      ]
+    }, {
+      label: '路由配置',
+      desc: 'router/index.ts',
+      children: [
+        { label: '/' , desc: '重定向到 /login' },
+        { label: '/login', desc: '→ LoginView.vue' },
+        { label: '/chat', desc: '→ ChatView.vue (需登录)' },
+        { label: '路由守卫', desc: '未登录自动跳登录页' },
+      ]
+    }]
+  }, {
+    label: '🖥️ 前端页面',
+    children: [{
+      label: 'LoginView.vue',
+      desc: '登录/注册',
+      children: [
+        { label: 'axios.post("/api/user/login")', desc: '发送账号密码' },
+        { label: '后端返回 {token, user}', desc: '登录成功' },
+        { label: 'localStorage.setItem("token")', desc: '存到浏览器' },
+        { label: 'router.push("/chat")', desc: '跳转到聊天页' },
+      ]
+    }, {
+      label: 'ChatView.vue (核心)',
+      desc: '三栏布局',
+      children: [
+        { label: 'conversations(ref)', desc: '会话列表 [{id,title,messages}]' },
+        { label: 'messages(ref)', desc: '当前消息 [{role,content}]' },
+        { label: 'currentConversationId', desc: '当前选中的会话ID' },
+        { label: 'isLoading(ref)', desc: '是否等待AI回复' },
+        { label: 'createNewConversation()', desc: 'POST /api/chat/conversation' },
+        { label: 'selectConversation(id)', desc: 'GET /api/chat/message/:id' },
+        { label: 'deleteConversation(id)', desc: 'DELETE /api/chat/conversation/:id' },
+        { label: 'sendMessage() 🔥核心', desc: '流式发送, fetch+ReadableStream' },
+        { label: 'axios拦截器', desc: '请求头自动加token / 401跳登录' },
+      ]
+    }]
+  }, {
+    label: '🔐 用户认证',
+    children: [{
+      label: '注册 POST /api/user/register',
+      children: [
+        { label: 'pool.query(SELECT)', desc: '检查用户名是否已存在' },
+        { label: 'bcrypt.genSalt(10)', desc: '生成盐, 10轮加密' },
+        { label: 'bcrypt.hash(password,salt)', desc: '加密密码' },
+        { label: 'pool.query(INSERT)', desc: '存入数据库' },
+        { label: '返回201', desc: '{success, data:{id,username}}' },
+      ]
+    }, {
+      label: '登录 POST /api/user/login',
+      children: [
+        { label: 'pool.query(SELECT)', desc: '查找用户' },
+        { label: 'bcrypt.compare()', desc: '比对密码' },
+        { label: 'jwt.sign()', desc: '生成JWT {id,username,role}' },
+        { label: '返回 {token, user}', desc: '不含密码!' },
+      ]
+    }, {
+      label: 'auth中间件 - Token验证',
+      desc: 'middlewares/auth.js',
+      children: [
+        { label: '从Header取token', desc: 'req.headers["authorization"]' },
+        { label: 'jwt.verify()', desc: '验证签名+过期' },
+        { label: '成功: req.user=数据', desc: 'next()放行' },
+        { label: '失败: 返回401', desc: '前端跳登录页' },
+      ]
+    }]
+  }, {
+    label: '💬 聊天系统',
+    children: [{
+      label: '数据库3张表',
+      children: [
+        { label: 'users', desc: 'id/username/password(bcrypt)/role' },
+        { label: 'conversations', desc: 'id/user_id(FK)/title/updated_at' },
+        { label: 'messages', desc: 'id/conversation_id(FK)/role/content' },
+        { label: '外键CASCADE', desc: '删用户→删会话→删消息, 自动级联' },
+      ]
+    }, {
+      label: '会话管理 chatController.js',
+      children: [
+        { label: 'createConversation', desc: 'INSERT INTO conversations' },
+        { label: 'getConversations', desc: 'SELECT WHERE user_id=? ORDER BY updated_at DESC' },
+        { label: 'deleteConversation', desc: 'DELETE WHERE id=? AND user_id=?' },
+      ]
+    }, {
+      label: '消息管理 chatController.js',
+      children: [
+        { label: 'sendMessage', desc: '保存用户消息→调AI→保存AI回复' },
+        { label: 'getMessages', desc: 'SELECT WHERE conversation_id=? ORDER BY created_at ASC' },
+      ]
+    }]
+  }, {
+    label: '🤖 AI接口(小米)',
+    children: [{
+      label: 'config/xiaomi-ai.js',
+      children: [
+        { label: 'apiKey', desc: '密钥(绝不暴露前端!)' },
+        { label: 'baseURL', desc: 'token-plan-cn.xiaomimimo.com/v1' },
+        { label: 'model', desc: 'mimo-v2.5-pro 小米AI' },
+        { label: 'temperature:0.2', desc: '创造性, 0保守1创造' },
+      ]
+    }, {
+      label: 'openai npm包',
+      desc: '小米AI兼容OpenAI格式',
+      children: [
+        { label: 'new OpenAI({apiKey,baseURL})', desc: '改baseURL就能调小米' },
+        { label: 'create({model,messages,stream})', desc: '核心方法' },
+        { label: '非流式返回', desc: 'response.choices[0].message.content' },
+        { label: '流式返回', desc: 'stream:true, 逐段chunk' },
+      ]
+    }, {
+      label: 'aiController.js',
+      children: [
+        { label: 'getAIReply()', desc: '非流式, 含3次重试' },
+        { label: 'getAIReplyStream()', desc: '流式, for await + onChunk回调' },
+      ]
+    }]
+  }, {
+    label: '⚡ 流式输出(核心)',
+    children: [{
+      label: '① 前端发送',
+      children: [
+        { label: 'add user msg', desc: 'messages.push({role:"user"})' },
+        { label: 'add 空气泡', desc: 'messages.push({role:"assistant", content:""})' },
+        { label: 'fetch(POST /message/stream)', desc: '带Authorization token' },
+      ]
+    }, {
+      label: '② 后端处理',
+      children: [
+        { label: 'setHeader SSE', desc: 'Content-Type: text/event-stream' },
+        { label: '验证+保存', desc: 'pool.query验证会话归属, INSERT用户消息' },
+        { label: '获取历史消息', desc: 'pool.query(SELECT messages ORDER BY ASC)' },
+        { label: '调getAIReplyStream()', desc: '传入历史消息+3个回调' },
+      ]
+    }, {
+      label: '③ 小米AI回复',
+      children: [
+        { label: 'stream:true', desc: '小米逐段返回chunk' },
+        { label: 'for await chunk', desc: '遍历每段' },
+        { label: 'delta.content', desc: '提取小段文字' },
+        { label: 'onChunk→res.write()', desc: 'SSE格式: data:{type:"chunk",content}⏎⏎' },
+        { label: 'onDone→res.end()', desc: '完成后写入数据库' },
+      ]
+    }, {
+      label: '④ 前端接收',
+      children: [
+        { label: 'response.body.getReader()', desc: '创建ReadableStream读取器' },
+        { label: 'TextDecoder.decode(value)', desc: 'Uint8Array→字符串' },
+        { label: '按\\n分割, 找data:行', desc: '解析SSE数据' },
+        { label: 'JSON.parse, 分type处理', desc: 'chunk→累加→Vue响应式更新' },
+        { label: 'done→停加载', desc: 'isLoading=false, 恢复输入' },
+      ]
+    }]
+  }, {
+    label: '🗄️ pool.query详解',
+    children: [{
+      label: '连接池概念',
+      desc: '预创建N个连接, 借→用→还',
+      children: [
+        { label: '好处', desc: '不用每次创建/销毁, 快+省资源' },
+      ]
+    }, {
+      label: '核心方法',
+      children: [
+        { label: 'pool.query(SQL, values)', desc: '最常用! 自动管理连接' },
+        { label: 'SELECT返回 [rows]', desc: '查不到=[], 查到=[{...}]' },
+        { label: 'INSERT返回 {insertId}', desc: '数据库自动生成的ID' },
+        { label: 'DELETE返回 {affectedRows}', desc: '影响的行数' },
+        { label: 'pool.execute()', desc: '预处理SQL, 更安全' },
+        { label: 'pool.getConnection()', desc: '事务时用, 必须release()' },
+      ]
+    }, {
+      label: '防SQL注入',
+      desc: '? 占位符, 不要拼接字符串!',
+    }]
+  }, {
+    label: '📐 API总览 (11个)',
+    children: [
+      { label: 'POST /api/user/register', desc: '注册' },
+      { label: 'POST /api/user/login', desc: '登录' },
+      { label: 'GET /api/user/profile', desc: '获取用户信息' },
+      { label: 'POST /api/chat/conversation', desc: '创建会话' },
+      { label: 'GET /api/chat/conversation', desc: '获取会话列表' },
+      { label: 'DELETE /api/chat/conversation/:id', desc: '删除会话' },
+      { label: 'POST /api/chat/message', desc: '发送消息' },
+      { label: '⭐ POST /api/chat/message/stream', desc: '流式发送(核心)' },
+      { label: 'GET /api/chat/message/:id', desc: '获取消息' },
+      { label: 'POST /api/ai/test', desc: '测试AI' },
+      { label: 'GET /api/ai/info', desc: 'AI模型信息' },
+    ]
+  }]
+};
+
+// ============================================================
+// Canvas 思维导图绘制引擎
+// ============================================================
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let scale = 1, offsetX = 0, offsetY = 0;
+let selectedNode = null;  // 当前悬停高亮的节点
+let allNodes = [];
+
+// 主题色
+const COLORS = {
+  bg: '#0f1115', line: 'rgba(74,158,255,0.25)',
+  boxBg: 'rgba(255,255,255,0.04)', boxBorder: 'rgba(255,255,255,0.08)',
+  boxBgHover: 'rgba(74,158,255,0.12)', boxBorderHover: 'rgba(74,158,255,0.3)',
+  title: '#4a9eff', text: '#e1e4e8', desc: '#8b949e',
+  selected: '#4a9eff', accent: '#ffcb6b',
+};
+// 布局常量（全局，所有函数都能访问）
+const LAYOUT = { H_GAP: 320, V_GAP: 56, NODE_W: 200, NODE_H: 44, DESC_H: 18 };
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  draw();
+}
+window.addEventListener('resize', resize);
+
+// ---------- 物理引擎: 树布局（防重叠） ----------
+function layoutTree(root) {
+  const { H_GAP, V_GAP, NODE_W, NODE_H, DESC_H } = LAYOUT;
+  let nodeId = 0;
+
+  function calcWidth(node) {
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = '14px -apple-system, sans-serif';
+    const tw = ctx.measureText(node.label).width;
+    const dw = node.desc ? ctx.measureText(node.desc).width : 0;
+    return Math.max(NODE_W, Math.min(tw, 280), dw + 20) + 24;
+  }
+
+  // 第1遍: 计算每个节点的宽高 + 子树总高度
+  function measure(node) {
+    node.id = nodeId++;
+    node.w = calcWidth(node);
+    node.h = NODE_H + (node.desc ? DESC_H + 6 : 0);
+    node.collapsed = false;
+    node.children = node.children || [];
+    // 递归测量子节点
+    node.children.forEach(measure);
+    // 计算子树总高度
+    if (node.children.length > 0 && !node.collapsed) {
+      // 子树高度 = 所有子节点自己的高度 + 子节点之间的间距
+      node.subtreeH = node.children.reduce((sum, c) => sum + (c.subtreeH || c.h), 0)
+        + (node.children.length - 1) * V_GAP;
+    } else {
+      node.subtreeH = node.h;
+    }
+  }
+
+  // 第2遍: 从根开始分配位置
+  function position(node, x, y) {
+    node.x = x;
+    node.y = y;
+    if (node.children.length > 0 && !node.collapsed) {
+      // 计算所有子节点的总高度
+      const totalChildrenH = node.children.reduce((sum, c) => sum + (c.subtreeH || c.h), 0)
+        + (node.children.length - 1) * V_GAP;
+      // 第一个子节点的y = 当前节点y + 节点高度一半 + 间距 - 总高度的一半
+      let childY = y + node.h / 2 + V_GAP;
+      node.children.forEach(child => {
+        // 子节点的子树高度
+        const childH = child.subtreeH || child.h;
+        // 子节点自身对齐到其子树顶部
+        position(child, x + H_GAP, childY);
+        childY += childH + V_GAP;
+      });
+    }
+  }
+
+  measure(root);
+  position(root, 0, 0);
+  // 记录根节点总尺寸
+  root.totalW = root.x + root.w + H_GAP * 4;
+  root.totalH = root.subtreeH || root.h;
+
+  // 展平节点列表
+  allNodes = [];
+  collectNodes(root);
+  return root;
+}
+
+function collectNodes(node) {
+  allNodes.push(node);
+  if (node.children && !node.collapsed) {
+    node.children.forEach(collectNodes);
+  }
+}
+
+function toggleNode(node) {
+  node.collapsed = !node.collapsed;
+  allNodes = [];
+  collectNodes(DATA);
+  draw();
+}
+
+// ---------- 绘制 ----------
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width / 2 + offsetX, canvas.height / 2 + offsetY);
+  ctx.scale(scale, scale);
+
+  // 从根开始递归绘制
+  drawNode(ctx, DATA);
+
+  ctx.restore();
+}
+
+function drawNode(ctx, node) {
+  if (!node) return;
+  const x = node.x, y = node.y;
+  const w = node.w, h = node.h;
+
+  // 画连线到子节点
+  if (node.children && !node.collapsed) {
+    node.children.forEach(child => {
+      ctx.beginPath();
+      ctx.moveTo(x, y + h / 2);
+      ctx.lineTo(child.x, child.y + child.h / 2);
+      ctx.strokeStyle = COLORS.line;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      drawNode(ctx, child);
+    });
+  }
+
+  // 判断鼠标悬停
+  const isHover = selectedNode === node;
+
+  // 盒子背景
+  ctx.beginPath();
+  const r = 8;
+  ctx.roundRect(x - w / 2, y, w, h, r);
+  ctx.fillStyle = isHover ? COLORS.boxBgHover : COLORS.boxBg;
+  ctx.fill();
+  ctx.strokeStyle = isHover ? COLORS.boxBorderHover : COLORS.boxBorder;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // 标题
+  ctx.fillStyle = node.children ? COLORS.title : COLORS.text;
+  ctx.font = '14px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(node.label, x, y + LAYOUT.NODE_H / 2 - (node.desc ? 6 : 0));
+
+  // 描述
+  if (node.desc) {
+    ctx.fillStyle = COLORS.desc;
+    ctx.font = '11px -apple-system, sans-serif';
+    ctx.fillText(node.desc, x, y + LAYOUT.NODE_H + LAYOUT.DESC_H / 2 - 2);
+  }
+
+  // 折叠标记 [+]/[-]
+  if (node.children && node.children.length > 0) {
+    ctx.fillStyle = COLORS.accent;
+    ctx.font = '12px monospace';
+    ctx.fillText(node.collapsed ? '[+]' : '[-]', x + w / 2 + 10, y + h / 2);
+  }
+}
+
+// roundRect polyfill for older browsers
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+    if (r > w / 2) r = w / 2;
+    if (r > h / 2) r = h / 2;
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+  };
+}
+
+// ---------- 交互 ----------
+let isDragging = false;
+let dragStartX, dragStartY, dragOffX, dragOffY;
+let mouseDownNode = null;  // mousedown时命中的节点
+
+// 坐标转换：屏幕坐标→画布坐标
+function screenToCanvas(cx, cy) {
+  return {
+    x: (cx - canvas.width / 2 - offsetX) / scale,
+    y: (cy - canvas.height / 2 - offsetY) / scale
+  };
+}
+
+// 检测坐标下的节点
+function hitTest(cx, cy) {
+  const p = screenToCanvas(cx, cy);
+  return allNodes.find(n =>
+    p.x >= n.x - n.w / 2 && p.x <= n.x + n.w / 2 &&
+    p.y >= n.y && p.y <= n.y + n.h
+  ) || null;
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  isDragging = false;  // 先设为false, mousemove才设为true
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+  dragOffX = offsetX;
+  dragOffY = offsetY;
+  mouseDownNode = hitTest(e.clientX, e.clientY);
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  // 距离>3px才算拖拽, 防止点击误触
+  const dx = e.clientX - dragStartX;
+  const dy = e.clientY - dragStartY;
+  if (e.buttons === 1 && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+    isDragging = true;
+    offsetX = dragOffX + dx;
+    offsetY = dragOffY + dy;
+    draw();
+  }
+
+  // 悬停检测（只改光标样式，不做其他事）
+  const hovered = e.buttons === 0 ? hitTest(e.clientX, e.clientY) : null;
+  if (hovered && hovered.children && hovered.children.length > 0) {
+    canvas.style.cursor = 'pointer';
+  } else {
+    canvas.style.cursor = isDragging ? 'grabbing' : 'grab';
+  }
+  // 高亮显示
+  if (hovered !== selectedNode) {
+    selectedNode = hovered;
+    draw();
+  }
+});
+
+canvas.addEventListener('mouseup', (e) => {
+  if (!isDragging && mouseDownNode) {
+    // 鼠标没移动过 + 点中了节点 → 视为点击
+    if (mouseDownNode.children && mouseDownNode.children.length > 0) {
+      toggleNode(mouseDownNode);
+    }
+  }
+  isDragging = false;
+  mouseDownNode = null;
+});
+
+canvas.addEventListener('mouseleave', () => {
+  isDragging = false;
+  mouseDownNode = null;
+});
+
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const newScale = scale * delta;
+  if (newScale < 0.2 || newScale > 3) return;
+  const mx = e.clientX - canvas.width / 2;
+  const my = e.clientY - canvas.height / 2;
+  offsetX = mx - (mx - offsetX) * delta;
+  offsetY = my - (my - offsetY) * delta;
+  scale = newScale;
+  draw();
+});
+
+// ---------- 初始化 ----------
+layoutTree(DATA);
+resize();
+
+// 初始偏移, 让根节点在左上
+offsetX = -DATA.x + 40;
+offsetY = -DATA.y + 60;
+scale = 0.7;
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<!--
+  index.html - HTML入口文件
+  
+  这是整个应用的唯一HTML文件
+  Vue会接管这个文件，动态渲染内容
+  
+  流程：
+  1. 浏览器加载 index.html
+  2. 执行 main.ts，创建Vue应用
+  3. Vue接管 #app 元素
+  4. 根据路由渲染对应页面
+-->
+<html lang="zh-CN">
+  <head>
+    <!-- 
+      charset：字符编码
+      UTF-8：支持中文、英文、emoji等所有字符
+    -->
+    <meta charset="UTF-8" />
+    
+    <!-- 
+      favicon：网站图标
+      显示在浏览器标签页上
+    -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- 
+      viewport：视口配置
+      - width=device-width：宽度等于设备宽度
+      - initial-scale=1.0：初始缩放100%
+      
+      作用：让网站在手机上正常显示
+      没有这个meta标签，手机上会显示得很小
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- 
+      description：网站描述
+      用于SEO（搜索引擎优化）
+      搜索引擎会显示这段文字
+    -->
+    <meta name="description" content="AI Chat - 智能对话，无限可能" />
+    
+    <!-- 
+      title：网站标题
+      显示在浏览器标签页上
+    -->
+    <title>AI Chat</title>
+    
+    <!-- 
+      preconnect：预连接
+      提前建立与Google Fonts服务器的连接
+      加快字体加载速度
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  </head>
+  <body>
+    <!-- 
+      #app：Vue应用的挂载点
+      Vue会接管这个元素，替换为渲染的内容
+    -->
+    <div id="app"></div>
+    
+    <!-- 
+      引入main.ts
+      type="module"：使用ES模块语法
+      浏览器会加载并执行main.ts
+    -->
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+---
+description: 
+alwaysApply: false
+enabled: true
+updatedAt: 2026-06-15T05:04:30.433Z
+provider: 
+---
+
+必读.md，是需求文档
+前端页面UI样式规则.md 是生成页面样式文档
+NOTES.md 是笔记
+PROGRESS.md  是进度
+PROJECT_MEMORY.md  是项目记忆
+PROJECT_STRUCTURE.md  是项目结构
+当我发送  改动md文件 你就要更新这些 .md文件的内容，更新该更新的，如果没内容更新那就不更新。

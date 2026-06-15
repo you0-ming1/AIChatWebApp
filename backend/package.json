@@ -1,0 +1,21 @@
+{
+  "name": "ai-chat-backend",
+  "version": "1.0.0",
+  "description": "AI聊天网站后端服务",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.22.5",
+    "openai": "^6.42.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
